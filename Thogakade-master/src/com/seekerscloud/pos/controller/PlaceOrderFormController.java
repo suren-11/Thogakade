@@ -3,6 +3,8 @@ package com.seekerscloud.pos.controller;
 import com.seekerscloud.pos.db.Database;
 import com.seekerscloud.pos.modal.Customer;
 import com.seekerscloud.pos.modal.Item;
+import com.seekerscloud.pos.modal.ItemDetails;
+import com.seekerscloud.pos.modal.Order;
 import com.seekerscloud.pos.view.tm.CartTm;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -16,6 +18,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Optional;
 
@@ -52,6 +55,7 @@ public class PlaceOrderFormController {
        setDateAndOrderId();
        loadAllCustomerIds();
        loadAllItemCodes();
+       setOrderId();
 
        cmbCustomerIds.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
            if(newValue!=null) {
@@ -64,6 +68,18 @@ public class PlaceOrderFormController {
                setItemDetails();
            }
        });
+    }
+
+    private void setOrderId() {
+        if (Database.orderTable.isEmpty()){
+            txtOrderId.setText("D-1");
+            return;
+        }
+        String tempOrderId = Database.orderTable.get(Database.orderTable.size() - 1).getOrderId();
+        String[] array = tempOrderId.split("-");
+        int tempNumber = Integer.parseInt(array[1]);
+        int finalizeOrderId = tempNumber + 1;
+        txtOrderId.setText("D-" + finalizeOrderId);
     }
 
     private void setItemDetails() {
@@ -100,7 +116,49 @@ public class PlaceOrderFormController {
     }
 
     public void placeOrderOnAction(ActionEvent actionEvent) {
+        if (obList.isEmpty()) return;
+        ArrayList<ItemDetails> details = new ArrayList<>();
+
+        for (CartTm tm: obList
+             ) {
+            details.add(new ItemDetails(tm.getCode(),tm.getUnitPrice(), tm.getQty()));
+        }
+
+        Order order = new Order(txtOrderId.getText(),new Date(),Double.parseDouble(lblTotal.getText()),cmbCustomerIds.getValue(),details);
+
+        Database.orderTable.add(order);
+        manageQty();
+        clearAll();
     }
+
+    private void manageQty() {
+        for (CartTm tm: obList
+             ) {
+            for (Item i: Database.itemTable
+                 ) {
+                if (i.getCode().equals(tm.getCode())){
+                    i.setQtyOnHand(i.getQtyOnHand() - tm.getQty());
+                    break;
+                }
+            }
+        }
+    }
+
+    private void clearAll() {
+        obList.clear();
+        calculateTotal();
+        txtName.clear();
+        txtAddress.clear();
+        txtSalary.clear();
+
+        cmbCustomerIds.setValue(null);
+        cmbItemCodes.setValue(null);
+
+        clearFields();
+        cmbCustomerIds.requestFocus();
+        setOrderId();
+    }
+
     ObservableList<CartTm> obList = FXCollections.observableArrayList();
     public void addToCartOnAction(ActionEvent actionEvent) {
         double unitPrice = Double.parseDouble(txtUnitPrice.getText());
@@ -110,6 +168,18 @@ public class PlaceOrderFormController {
 
         int row = isAlreadyExists(cmbItemCodes.getValue());
 
+        if (qty == 0){
+            return;
+        }
+
+        for (Item i: Database.itemTable
+             ) {
+            if (qty > i.getQtyOnHand()){
+                Alert alert = new Alert(Alert.AlertType.WARNING,"qty Exceding");
+                alert.show();
+                return;
+            }
+        }
         if (row==-1){
             CartTm tm = new CartTm(cmbItemCodes.getValue(),
                     txtDescription.getText(),unitPrice,qty,total,btn);
