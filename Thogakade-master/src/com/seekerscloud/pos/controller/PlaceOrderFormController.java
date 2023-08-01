@@ -160,7 +160,26 @@ public class PlaceOrderFormController {
     }
 
     ObservableList<CartTm> obList = FXCollections.observableArrayList();
+
+    private boolean checkQty(String code,int qty){
+        for (Item i: Database.itemTable
+             ) {
+            if (code.equals(i.getCode())){
+                if (i.getQtyOnHand()>=qty){
+                    return true;
+                }else {
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
     public void addToCartOnAction(ActionEvent actionEvent) {
+        if (!checkQty(cmbItemCodes.getValue(),Integer.parseInt(txtQty.getText()))){
+            new Alert(Alert.AlertType.WARNING,"Invalid Qty").show();
+            return;
+        }
+
         double unitPrice = Double.parseDouble(txtUnitPrice.getText());
         int qty = Integer.parseInt(txtQty.getText());
         double total = unitPrice * qty;
@@ -168,18 +187,7 @@ public class PlaceOrderFormController {
 
         int row = isAlreadyExists(cmbItemCodes.getValue());
 
-        if (qty == 0){
-            return;
-        }
 
-        for (Item i: Database.itemTable
-             ) {
-            if (qty > i.getQtyOnHand()){
-                Alert alert = new Alert(Alert.AlertType.WARNING,"qty Exceding");
-                alert.show();
-                return;
-            }
-        }
         if (row==-1){
             CartTm tm = new CartTm(cmbItemCodes.getValue(),
                     txtDescription.getText(),unitPrice,qty,total,btn);
@@ -188,6 +196,10 @@ public class PlaceOrderFormController {
         }else {
             int tempQty = obList.get(row).getQty() + qty;
             double tempTotal = unitPrice * tempQty;
+            if (!checkQty(cmbItemCodes.getValue(),tempQty)){
+                new Alert(Alert.AlertType.WARNING,"Invalid Qty").show();
+                return;
+            }
             obList.get(row).setQty(tempQty);
             obList.get(row).setTotal(tempTotal);
             tblCart.refresh();
