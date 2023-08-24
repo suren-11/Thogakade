@@ -70,16 +70,20 @@ public class CustomerFormController {
     }
 
     private void searchCustomers(String text) {
+        String searchText = "%"+text+"%";
 
         try {
+            ObservableList<CustomerTm> tmList = FXCollections.observableArrayList();
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Thogakade", "root", "1992");
 
-            String sql = "SELECT * FROM Customer";
+            String sql = "SELECT * FROM Customer WHERE name LIKE ? || address LIKE ?";
             PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1,searchText);
+            statement.setString(2,searchText);
             ResultSet set = statement.executeQuery();
 
-            ObservableList<CustomerTm> tmList = FXCollections.observableArrayList();
+
 
             while (set.next()){
 
@@ -175,19 +179,28 @@ public class CustomerFormController {
                 e.printStackTrace();
             }
 
-
-
         }else {
-            for (int i = 0; i < Database.customerTable.size(); i++) {
-                if (txtId.getText().equalsIgnoreCase(Database.customerTable.get(i).getId())){
-                    Database.customerTable.get(i).setName(txtName.getText());
-                    Database.customerTable.get(i).setAddress(txtAddress.getText());
-                    Database.customerTable.get(i).setSalary(Double.parseDouble(txtSalary.getText()));
+            try {
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Thogakade","root","1992");
+
+                String sql = "UPDATE Customer SET name = ?, address = ?, salary = ? WHERE id = ?";
+                PreparedStatement statement = connection.prepareStatement(sql);
+                statement.setString(1,c1.getName());
+                statement.setString(2,c1.getAddress());
+                statement.setDouble(3,c1.getSalary());
+                statement.setString(4,c1.getId());
+                if(statement.executeUpdate() > 0){
                     searchCustomers(searchText);
                     clearFields();
-                    new Alert(Alert.AlertType.INFORMATION,"Customer Updated").show();
+                    new Alert(Alert.AlertType.INFORMATION,"Customer Updated!").show();
+                }else {
+                    new Alert(Alert.AlertType.WARNING,"Try Again").show();
                 }
+            }catch (ClassNotFoundException | SQLException e){
+                e.printStackTrace();
             }
+
         }
 
     }
