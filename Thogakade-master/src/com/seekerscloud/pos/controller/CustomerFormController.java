@@ -16,10 +16,7 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Optional;
@@ -73,33 +70,51 @@ public class CustomerFormController {
     }
 
     private void searchCustomers(String text) {
-        ObservableList<CustomerTm> tmList = FXCollections.observableArrayList();
-        for (Customer c:Database.customerTable
-             ) {
-            if (c.getName().contains(text) || c.getAddress().contains(text)){
 
-                Button btn = new Button("Delete");
-                CustomerTm tm = new CustomerTm(c.getId(),c.getName(),c.getAddress(),c.getSalary(),btn);
-                tmList.add(tm);
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Thogakade", "root", "1992");
 
-                btn.setOnAction(event -> {
-                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION,"Do you want to delete?",ButtonType.YES, ButtonType.NO);
-                    Optional<ButtonType> buttonType = alert.showAndWait();
-                    if (buttonType.get()==ButtonType.YES){
-                        boolean isDeleted = Database.customerTable.remove(c);
+            String sql = "SELECT * FROM Customer";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            ResultSet set = statement.executeQuery();
 
-                        if(isDeleted){
-                            searchCustomers(searchText);
-                            new Alert(Alert.AlertType.INFORMATION,"Customer Deleted!").show();
-                        }else {
-                            new Alert(Alert.AlertType.WARNING,"Try Again").show();
+            ObservableList<CustomerTm> tmList = FXCollections.observableArrayList();
+
+            while (set.next()){
+
+
+                    Button btn = new Button("Delete");
+                    CustomerTm tm = new CustomerTm(
+                            set.getString(1),
+                            set.getString(2),
+                            set.getString(3),
+                            set.getDouble(4),btn);
+                    tmList.add(tm);
+
+                    /*btn.setOnAction(event -> {
+                        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,"Do you want to delete?",ButtonType.YES, ButtonType.NO);
+                        Optional<ButtonType> buttonType = alert.showAndWait();
+                        if (buttonType.get()==ButtonType.YES){
+                            boolean isDeleted = Database.customerTable.remove(c);
+
+                            if(isDeleted){
+                                searchCustomers(searchText);
+                                new Alert(Alert.AlertType.INFORMATION,"Customer Deleted!").show();
+                            }else {
+                                new Alert(Alert.AlertType.WARNING,"Try Again").show();
+                            }
                         }
-                    }
-                });
-            }
+                    });*/
 
+            }
+            tblCustomer.setItems(tmList);
+
+
+        }catch (ClassNotFoundException | SQLException e){
+            e.printStackTrace();
         }
-        tblCustomer.setItems(tmList);
+
     }
 
     public void backToHomeOnAction(ActionEvent actionEvent) throws IOException {
@@ -121,15 +136,23 @@ public class CustomerFormController {
                 Class.forName("com.mysql.cj.jdbc.Driver");
                 //Create connection
                 Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Thogakade","root","1992");
-                //Create Statement
+
+                String sql = "INSERT INTO Customer VALUES(?,?,?,?)";
+                PreparedStatement statement = connection.prepareStatement(sql);
+                statement.setString(1,c1.getId());
+                statement.setString(2,c1.getName());
+                statement.setString(3,c1.getAddress());
+                statement.setDouble(4,c1.getSalary());
+
+                /*Create Statement
                 Statement statement = connection.createStatement();
                 //Create Query
                 String sql = "INSERT INTO Customer VALUES('"+c1.getId()+"','"+
                         c1.getName()+"','"+c1.getAddress()+"','"+c1.getSalary()+"')";
-                //Statement execute
-                int isSaved = statement.executeUpdate(sql);
+                //Statement execute*/
 
-                if(isSaved > 0){
+
+                if(statement.executeUpdate() > 0){
                     searchCustomers(searchText);
                     clearFields();
                     new Alert(Alert.AlertType.INFORMATION,"Customer Saved!").show();
