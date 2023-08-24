@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="javax.persistence-api-2.2">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Thogakade-master/lib/javax.persistence-api-2.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Thogakade-master/lib/javax.activation-api-1.2.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
