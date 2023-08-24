@@ -16,6 +16,10 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Optional;
@@ -112,15 +116,32 @@ public class CustomerFormController {
 
         if(btnSaveCustomer.getText().equalsIgnoreCase("Save Customer")){
 
-            boolean isSaved = Database.customerTable.add(c1);
+            try{
+                //DRIVER LOAD RAM
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                //Create connection
+                Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Thogakade","root","1992");
+                //Create Statement
+                Statement statement = connection.createStatement();
+                //Create Query
+                String sql = "INSERT INTO Customer VALUES('"+c1.getId()+"','"+
+                        c1.getName()+"','"+c1.getAddress()+"','"+c1.getSalary()+"')";
+                //Statement execute
+                int isSaved = statement.executeUpdate(sql);
 
-            if(isSaved){
-                searchCustomers(searchText);
-                clearFields();
-                new Alert(Alert.AlertType.INFORMATION,"Customer Saved!").show();
-            }else {
-                new Alert(Alert.AlertType.WARNING,"Try Again").show();
+                if(isSaved > 0){
+                    searchCustomers(searchText);
+                    clearFields();
+                    new Alert(Alert.AlertType.INFORMATION,"Customer Saved!").show();
+                }else {
+                    new Alert(Alert.AlertType.WARNING,"Try Again").show();
+                }
+            }catch (ClassNotFoundException |SQLException e){
+                e.printStackTrace();
             }
+
+
+
         }else {
             for (int i = 0; i < Database.customerTable.size(); i++) {
                 if (txtId.getText().equalsIgnoreCase(Database.customerTable.get(i).getId())){
