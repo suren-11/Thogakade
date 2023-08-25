@@ -83,10 +83,7 @@ public class CustomerFormController {
             statement.setString(2,searchText);
             ResultSet set = statement.executeQuery();
 
-
-
             while (set.next()){
-
 
                     Button btn = new Button("Delete");
                     CustomerTm tm = new CustomerTm(
@@ -122,15 +119,12 @@ public class CustomerFormController {
 
                         }
                     });
-
             }
             tblCustomer.setItems(tmList);
-
 
         }catch (ClassNotFoundException | SQLException e){
             e.printStackTrace();
         }
-
     }
 
     public void backToHomeOnAction(ActionEvent actionEvent) throws IOException {

@@ -11,6 +11,12 @@ CREATE TABLE IF NOT EXISTS Customer (
     address TEXT,
     salary DOUBLE,
     CONSTRAINT PRIMARY KEY(id)
-)
+);
 #============================================
-
+CREATE TABLE IF NOT EXISTS Item (
+    code VARCHAR (45),
+    description VARCHAR (45),
+    unitPrice DOUBLE,
+    qtyOnHand INT,
+    CONSTRAINT PRIMARY KEY(code)
+);
