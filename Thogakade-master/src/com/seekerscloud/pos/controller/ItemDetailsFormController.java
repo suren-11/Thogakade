@@ -5,6 +5,7 @@ import com.seekerscloud.pos.db.Database;
 import com.seekerscloud.pos.modal.ItemDetails;
 import com.seekerscloud.pos.modal.Order;
 import com.seekerscloud.pos.view.tm.ItemDetailsTm;
+import com.seekerscloud.pos.view.tm.OrderTm;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -19,6 +20,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class ItemDetailsFormController {
 
@@ -37,22 +39,29 @@ public class ItemDetailsFormController {
     }
 
     public void loadOrderDetails(String id){
-        for (Order o: Database.orderTable
-             ) {
-            if (o.getOrderId().equals(id)){
-                ObservableList<ItemDetailsTm> tmList = FXCollections.observableArrayList();
-                for (ItemDetails d: o.getItemDetails()
-                     ) {
-                    double tempUnitPrice = d.getUnitPrice();
-                    int tempQtyOnHand = d.getQty();
-                    double tempTotal = tempUnitPrice * tempQtyOnHand;
-                    tmList.add(new ItemDetailsTm(
-                            d.getCode(),d.getUnitPrice(),d.getQty(),tempTotal
-                    ));
-                }
-                tblItems.setItems(tmList);
-                return;
+        try {
+            String sql = "SELECT o.orderId,d.itemCode,d.orderId,d.unitPrice,d.qty FROM `Order` " +
+                    "o INNER JOIN `Order Details` d ON o.orderId = d.orderId AND o.orderId = ?";
+            PreparedStatement statement = DBConnection.getInstance().getConnection().prepareStatement(sql);
+            statement.setString(1,id);
+            ResultSet set = statement.executeQuery();
+
+            ObservableList<ItemDetailsTm> tmList = FXCollections.observableArrayList();
+            while (set.next()){
+
+                double tempUnitPrice = set.getDouble(4);
+                int tempQtyOnHand = set.getInt(5);
+                double tempTotal = tempUnitPrice * tempQtyOnHand;
+                tmList.add(new ItemDetailsTm(
+                        set.getString(2),tempUnitPrice,tempQtyOnHand,tempTotal
+                ));
+
             }
+            tblItems.setItems(tmList);
+
+
+        }catch (ClassNotFoundException | SQLException e){
+            e.printStackTrace();
         }
     }
 
