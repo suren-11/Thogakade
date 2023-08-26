@@ -72,15 +72,26 @@ public class PlaceOrderFormController {
     }
 
     private void setOrderId() {
-        if (Database.orderTable.isEmpty()){
-            txtOrderId.setText("D-1");
-            return;
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Thogakade", "root", "1992");
+
+            String sql = "SELECT orderId FROM `Order` ORDER BY orderId DESC LIMIT 1";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            ResultSet set = statement.executeQuery();
+            if (set.next()){
+                String tempOrderId = set.getString(1);
+                String[] array = tempOrderId.split("-");
+                int tempNumber = Integer.parseInt(array[1]);
+                int finalizeOrderId = tempNumber + 1;
+                txtOrderId.setText("D-" + finalizeOrderId);
+            }else {
+                txtOrderId.setText("D-1");
+                return;
+            }
+        }catch (ClassNotFoundException | SQLException e){
+            e.printStackTrace();
         }
-        String tempOrderId = Database.orderTable.get(Database.orderTable.size() - 1).getOrderId();
-        String[] array = tempOrderId.split("-");
-        int tempNumber = Integer.parseInt(array[1]);
-        int finalizeOrderId = tempNumber + 1;
-        txtOrderId.setText("D-" + finalizeOrderId);
     }
 
     private void setItemDetails() {
@@ -165,12 +176,10 @@ public class PlaceOrderFormController {
     public void placeOrderOnAction(ActionEvent actionEvent) {
         if (obList.isEmpty()) return;
         ArrayList<ItemDetails> details = new ArrayList<>();
-
         for (CartTm tm: obList
              ) {
             details.add(new ItemDetails(tm.getCode(),tm.getUnitPrice(), tm.getQty()));
         }
-
         Order order = new Order(txtOrderId.getText(),new Date(),Double.parseDouble(lblTotal.getText()),cmbCustomerIds.getValue(),details);
 
         try {
@@ -185,8 +194,13 @@ public class PlaceOrderFormController {
             statement.setString(4,order.getCustomer());
 
             if (statement.executeUpdate()>0){
-                manageQty();
-                clearAll();
+                boolean isAllUpdated = manageQty(details);
+                if (isAllUpdated){
+                    new Alert(Alert.AlertType.CONFIRMATION,"Order Placed!").show();
+                    clearAll();
+                }else {
+                    new Alert(Alert.AlertType.WARNING,"Try Again").show();
+                }
             }else {
                 new Alert(Alert.AlertType.WARNING,"Try Again").show();
             }
@@ -196,16 +210,50 @@ public class PlaceOrderFormController {
 
     }
 
-    private void manageQty() {
-        for (CartTm tm: obList
-             ) {
-            for (Item i: Database.itemTable
-                 ) {
-                if (i.getCode().equals(tm.getCode())){
-                    i.setQtyOnHand(i.getQtyOnHand() - tm.getQty());
-                    break;
+    private boolean manageQty(ArrayList<ItemDetails> details) {
+        try {
+            for (ItemDetails d: details
+            ) {
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Thogakade", "root", "1992");
+
+                String sql = "INSERT INTO `Order Details` VALUES (?,?,?,?)";
+                PreparedStatement statement = connection.prepareStatement(sql);
+                statement.setString(1,d.getCode());
+                statement.setString(2,txtOrderId.getText());
+                statement.setDouble(3,d.getUnitPrice());
+                statement.setInt(4,d.getQty());
+
+                boolean isOrderDetailsSaved = statement.executeUpdate()>0;
+                if (isOrderDetailsSaved){
+                    boolean isQtyUpdated = update(d);
+                    if (!isQtyUpdated){
+                        return false;
+                    }
+                }else {
+                    return false;
                 }
             }
+        }catch (ClassNotFoundException | SQLException e){
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    private boolean update(ItemDetails d) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Thogakade", "root", "1992");
+
+            String sql = "UPDATE Item SET qtyOnHand = (qtyOnHand - ?) WHERE code = ?";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setInt(1,d.getQty());
+            statement.setString(2,d.getCode());
+            return statement.executeUpdate()>0;
+
+        }catch (SQLException | ClassNotFoundException e){
+            e.printStackTrace();
+            return false;
         }
     }
 

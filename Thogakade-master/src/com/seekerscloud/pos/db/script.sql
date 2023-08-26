@@ -29,3 +29,13 @@ CREATE TABLE IF NOT EXISTS `Order` (
   CONSTRAINT PRIMARY KEY(orderId),
   CONSTRAINT FOREIGN KEY (customer) REFERENCES Customer(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
+#==============================================
+CREATE TABLE IF NOT EXISTS `Order Details` (
+                                               itemCode VARCHAR (45),
+                                               orderId VARCHAR (45),
+                                               unitPrice DOUBLE,
+                                               qty INT,
+                                               CONSTRAINT PRIMARY KEY(itemCode,orderId),
+                                               CONSTRAINT FOREIGN KEY (itemCode) REFERENCES item(code) ON DELETE CASCADE ON UPDATE CASCADE,
+                                               CONSTRAINT FOREIGN KEY (orderId) REFERENCES `Order`(orderId) ON DELETE CASCADE ON UPDATE CASCADE
+);
