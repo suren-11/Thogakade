@@ -1,5 +1,6 @@
 package com.seekerscloud.pos.controller;
 
+import com.seekerscloud.pos.db.DBConnection;
 import com.seekerscloud.pos.db.Database;
 import com.seekerscloud.pos.modal.Customer;
 import com.seekerscloud.pos.modal.Item;
@@ -73,11 +74,9 @@ public class PlaceOrderFormController {
 
     private void setOrderId() {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Thogakade", "root", "1992");
 
             String sql = "SELECT orderId FROM `Order` ORDER BY orderId DESC LIMIT 1";
-            PreparedStatement statement = connection.prepareStatement(sql);
+            PreparedStatement statement = DBConnection.getInstance().getConnection().prepareStatement(sql);
             ResultSet set = statement.executeQuery();
             if (set.next()){
                 String tempOrderId = set.getString(1);
@@ -96,11 +95,9 @@ public class PlaceOrderFormController {
 
     private void setItemDetails() {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Thogakade", "root", "1992");
 
             String sql = "SELECT * FROM Item WHERE code = ?";
-            PreparedStatement statement = connection.prepareStatement(sql);
+            PreparedStatement statement = DBConnection.getInstance().getConnection().prepareStatement(sql);
             statement.setString(1,cmbItemCodes.getValue());
             ResultSet set = statement.executeQuery();
             if (set.next()){
@@ -116,11 +113,9 @@ public class PlaceOrderFormController {
 
     private void setCustomerDetails() {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Thogakade", "root", "1992");
 
             String sql = "SELECT * FROM Customer WHERE id = ?";
-            PreparedStatement statement = connection.prepareStatement(sql);
+            PreparedStatement statement = DBConnection.getInstance().getConnection().prepareStatement(sql);
             statement.setString(1,cmbCustomerIds.getValue());
             ResultSet set = statement.executeQuery();
             if (set.next()){
@@ -137,11 +132,9 @@ public class PlaceOrderFormController {
 
     private void loadAllItemCodes() {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Thogakade", "root", "1992");
 
             String sql = "SELECT code FROM Item";
-            PreparedStatement statement = connection.prepareStatement(sql);
+            PreparedStatement statement = DBConnection.getInstance().getConnection().prepareStatement(sql);
             ResultSet set = statement.executeQuery();
             ArrayList<String> idList = new ArrayList<>();
             while (set.next()){
@@ -156,11 +149,9 @@ public class PlaceOrderFormController {
 
     private void loadAllCustomerIds() {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Thogakade", "root", "1992");
 
             String sql = "SELECT id FROM Customer";
-            PreparedStatement statement = connection.prepareStatement(sql);
+            PreparedStatement statement = DBConnection.getInstance().getConnection().prepareStatement(sql);
             ResultSet set = statement.executeQuery();
             ArrayList<String> idList = new ArrayList<>();
             while (set.next()){
@@ -183,11 +174,9 @@ public class PlaceOrderFormController {
         Order order = new Order(txtOrderId.getText(),new Date(),Double.parseDouble(lblTotal.getText()),cmbCustomerIds.getValue(),details);
 
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Thogakade", "root", "1992");
 
             String sql = "INSERT INTO `Order` VALUES (?,?,?,?)";
-            PreparedStatement statement = connection.prepareStatement(sql);
+            PreparedStatement statement = DBConnection.getInstance().getConnection().prepareStatement(sql);
             statement.setString(1,order.getOrderId());
             statement.setString(2,txtDate.getText());
             statement.setDouble(3,order.getTotalCost());
@@ -214,11 +203,9 @@ public class PlaceOrderFormController {
         try {
             for (ItemDetails d: details
             ) {
-                Class.forName("com.mysql.cj.jdbc.Driver");
-                Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Thogakade", "root", "1992");
 
                 String sql = "INSERT INTO `Order Details` VALUES (?,?,?,?)";
-                PreparedStatement statement = connection.prepareStatement(sql);
+                PreparedStatement statement = DBConnection.getInstance().getConnection().prepareStatement(sql);
                 statement.setString(1,d.getCode());
                 statement.setString(2,txtOrderId.getText());
                 statement.setDouble(3,d.getUnitPrice());
@@ -242,11 +229,9 @@ public class PlaceOrderFormController {
 
     private boolean update(ItemDetails d) {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Thogakade", "root", "1992");
 
             String sql = "UPDATE Item SET qtyOnHand = (qtyOnHand - ?) WHERE code = ?";
-            PreparedStatement statement = connection.prepareStatement(sql);
+            PreparedStatement statement = DBConnection.getInstance().getConnection().prepareStatement(sql);
             statement.setInt(1,d.getQty());
             statement.setString(2,d.getCode());
             return statement.executeUpdate()>0;
