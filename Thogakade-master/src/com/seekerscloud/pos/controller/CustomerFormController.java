@@ -1,9 +1,10 @@
 package com.seekerscloud.pos.controller;
 
 import com.jfoenix.controls.JFXButton;
+import com.seekerscloud.pos.dao.DatabaseAccessCode;
 import com.seekerscloud.pos.db.DBConnection;
 import com.seekerscloud.pos.db.Database;
-import com.seekerscloud.pos.modal.Customer;
+import com.seekerscloud.pos.entity.Customer;
 import com.seekerscloud.pos.view.tm.CustomerTm;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -76,44 +77,31 @@ public class CustomerFormController {
         try {
             ObservableList<CustomerTm> tmList = FXCollections.observableArrayList();
 
-            String sql = "SELECT * FROM Customer WHERE name LIKE ? || address LIKE ?";
-            PreparedStatement statement = DBConnection.getInstance().getConnection().prepareStatement(sql);
-            statement.setString(1,searchText);
-            statement.setString(2,searchText);
-            ResultSet set = statement.executeQuery();
+            ArrayList<Customer> customerList = new DatabaseAccessCode().searchCustomers(searchText);
 
-            while (set.next()){
-
+            for (Customer c : customerList){
                     Button btn = new Button("Delete");
                     CustomerTm tm = new CustomerTm(
-                            set.getString(1),
-                            set.getString(2),
-                            set.getString(3),
-                            set.getDouble(4),btn);
+                            c.getId(),
+                            c.getName(),
+                            c.getAddress(),
+                            c.getSalary(),
+                            btn);
                     tmList.add(tm);
-
                     btn.setOnAction(event -> {
                         Alert alert = new Alert(Alert.AlertType.CONFIRMATION,"Do you want to delete?",ButtonType.YES, ButtonType.NO);
                         Optional<ButtonType> buttonType = alert.showAndWait();
                         if (buttonType.get()==ButtonType.YES){
-
                             try {
-
-                                String sql1 = "DELETE FROM Customer WHERE id = ?";
-                                PreparedStatement statement1 = DBConnection.getInstance().getConnection().prepareStatement(sql1);
-                                statement1.setString(1,tm.getId());
-
-                                if(statement1.executeUpdate()>0){
+                                if(new DatabaseAccessCode().deleteCustomer(tm.getId())){
                                     searchCustomers(searchText);
                                     new Alert(Alert.AlertType.INFORMATION,"Customer Deleted!").show();
                                 }else {
                                     new Alert(Alert.AlertType.WARNING,"Try Again").show();
                                 }
-
                             }catch (ClassNotFoundException | SQLException e){
                                 e.printStackTrace();
                             }
-
                         }
                     });
             }
@@ -134,48 +122,34 @@ public class CustomerFormController {
     }
 
     public void saveCustomerOnAction(ActionEvent actionEvent) {
-        Customer c1 = new Customer(txtId.getText(),txtName.getText(),txtAddress.getText(),Double.parseDouble(txtSalary.getText()));
 
         if(btnSaveCustomer.getText().equalsIgnoreCase("Save Customer")){
-
-            try{
-
-                String sql = "INSERT INTO Customer VALUES(?,?,?,?)";
-                PreparedStatement statement = DBConnection.getInstance().getConnection().prepareStatement(sql);
-                statement.setString(1,c1.getId());
-                statement.setString(2,c1.getName());
-                statement.setString(3,c1.getAddress());
-                statement.setDouble(4,c1.getSalary());
-
-                /*Create Statement
-                Statement statement = connection.createStatement();
-                //Create Query
-                String sql = "INSERT INTO Customer VALUES('"+c1.getId()+"','"+
-                        c1.getName()+"','"+c1.getAddress()+"','"+c1.getSalary()+"')";
-                //Statement execute*/
-
-
-                if(statement.executeUpdate() > 0){
-                    searchCustomers(searchText);
-                    clearFields();
-                    new Alert(Alert.AlertType.INFORMATION,"Customer Saved!").show();
-                }else {
-                    new Alert(Alert.AlertType.WARNING,"Try Again").show();
-                }
-            }catch (ClassNotFoundException |SQLException e){
+            try {
+               boolean isCustomerSaved = new DatabaseAccessCode().saveCustomer(new Customer(
+                        txtId.getText(),
+                        txtName.getText(),
+                        txtAddress.getText(),
+                        Double.parseDouble(txtSalary.getText())
+                ));
+               if (isCustomerSaved){
+                   searchCustomers(searchText);
+                   clearFields();
+                   new Alert(Alert.AlertType.INFORMATION,"Customer Saved!").show();
+               }else {
+                   new Alert(Alert.AlertType.WARNING,"Try Again").show();
+               }
+            }catch (ClassNotFoundException | SQLException e){
                 e.printStackTrace();
             }
-
         }else {
             try {
-
-                String sql = "UPDATE Customer SET name = ?, address = ?, salary = ? WHERE id = ?";
-                PreparedStatement statement = DBConnection.getInstance().getConnection().prepareStatement(sql);
-                statement.setString(1,c1.getName());
-                statement.setString(2,c1.getAddress());
-                statement.setDouble(3,c1.getSalary());
-                statement.setString(4,c1.getId());
-                if(statement.executeUpdate() > 0){
+                boolean isCustomerUpdated = new DatabaseAccessCode().updateCustomer(new Customer(
+                        txtId.getText(),
+                        txtName.getText(),
+                        txtAddress.getText(),
+                        Double.parseDouble(txtSalary.getText())
+                ));
+                if(isCustomerUpdated){
                     searchCustomers(searchText);
                     clearFields();
                     new Alert(Alert.AlertType.INFORMATION,"Customer Updated!").show();
