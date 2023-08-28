@@ -1,12 +1,9 @@
 package com.seekerscloud.pos.controller;
 
 import com.jfoenix.controls.JFXButton;
-import com.seekerscloud.pos.dao.DatabaseAccessCode;
-import com.seekerscloud.pos.db.DBConnection;
-import com.seekerscloud.pos.db.Database;
+import com.seekerscloud.pos.dao.custom.impl.CustomerDaoImpl;
+import com.seekerscloud.pos.dao.custom.impl.ItemDaoImpl;
 import com.seekerscloud.pos.entity.Item;
-import com.seekerscloud.pos.modal.Customer;
-import com.seekerscloud.pos.view.tm.CustomerTm;
 import com.seekerscloud.pos.view.tm.ItemTm;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -84,7 +81,7 @@ public class ItemFormController {
         if(btnSaveItem.getText().equalsIgnoreCase("Save Item")){
 
             try{
-                boolean isItemSaved = new DatabaseAccessCode().saveItem(new Item(
+                boolean isItemSaved = new ItemDaoImpl().save(new Item(
                         txtCode.getText(),
                         txtDescription.getText(),
                         Double.parseDouble(txtUnitPrice.getText()),
@@ -102,7 +99,7 @@ public class ItemFormController {
             }
         }else {
             try {
-                boolean isItemUpdated = new DatabaseAccessCode().updateItem(
+                boolean isItemUpdated = new ItemDaoImpl().update(
                         new Item(
                                 txtCode.getText(),
                                 txtDescription.getText(),
@@ -126,7 +123,7 @@ public class ItemFormController {
 
         try {
             ObservableList<ItemTm> tmList = FXCollections.observableArrayList();
-            ArrayList<Item> itemList = new DatabaseAccessCode().searchItems(searchText);
+            ArrayList<Item> itemList = new ItemDaoImpl().searchItems(searchText);
             for (Item i : itemList){
                 Button btn = new Button("Delete");
                 ItemTm tm = new ItemTm(
@@ -141,7 +138,7 @@ public class ItemFormController {
                     if (buttonType.get()==ButtonType.YES){
 
                         try {
-                            if(new DatabaseAccessCode().deleteItem(tm.getCode())){
+                            if(new ItemDaoImpl().delete(tm.getCode())){
                                 searchItem(searchText);
                                 new Alert(Alert.AlertType.INFORMATION,"Item Deleted!").show();
                             }else {

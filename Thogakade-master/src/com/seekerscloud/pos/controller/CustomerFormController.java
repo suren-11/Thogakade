@@ -1,9 +1,7 @@
 package com.seekerscloud.pos.controller;
 
 import com.jfoenix.controls.JFXButton;
-import com.seekerscloud.pos.dao.DatabaseAccessCode;
-import com.seekerscloud.pos.db.DBConnection;
-import com.seekerscloud.pos.db.Database;
+import com.seekerscloud.pos.dao.custom.impl.CustomerDaoImpl;
 import com.seekerscloud.pos.entity.Customer;
 import com.seekerscloud.pos.view.tm.CustomerTm;
 import javafx.collections.FXCollections;
@@ -15,12 +13,10 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Observable;
 import java.util.Optional;
 
 public class CustomerFormController {
@@ -77,7 +73,7 @@ public class CustomerFormController {
         try {
             ObservableList<CustomerTm> tmList = FXCollections.observableArrayList();
 
-            ArrayList<Customer> customerList = new DatabaseAccessCode().searchCustomers(searchText);
+            ArrayList<Customer> customerList = new CustomerDaoImpl().searchCustomers(searchText);
 
             for (Customer c : customerList){
                     Button btn = new Button("Delete");
@@ -93,7 +89,7 @@ public class CustomerFormController {
                         Optional<ButtonType> buttonType = alert.showAndWait();
                         if (buttonType.get()==ButtonType.YES){
                             try {
-                                if(new DatabaseAccessCode().deleteCustomer(tm.getId())){
+                                if(new CustomerDaoImpl().delete(tm.getId())){
                                     searchCustomers(searchText);
                                     new Alert(Alert.AlertType.INFORMATION,"Customer Deleted!").show();
                                 }else {
@@ -125,7 +121,7 @@ public class CustomerFormController {
 
         if(btnSaveCustomer.getText().equalsIgnoreCase("Save Customer")){
             try {
-               boolean isCustomerSaved = new DatabaseAccessCode().saveCustomer(new Customer(
+               boolean isCustomerSaved = new CustomerDaoImpl().save(new Customer(
                         txtId.getText(),
                         txtName.getText(),
                         txtAddress.getText(),
@@ -143,7 +139,7 @@ public class CustomerFormController {
             }
         }else {
             try {
-                boolean isCustomerUpdated = new DatabaseAccessCode().updateCustomer(new Customer(
+                boolean isCustomerUpdated = new CustomerDaoImpl().update(new Customer(
                         txtId.getText(),
                         txtName.getText(),
                         txtAddress.getText(),
