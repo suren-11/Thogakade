@@ -41,4 +41,21 @@ public class CustomerDaoImpl implements CustomerDao {
         statement.setString(4, c.getId());
         return statement.executeUpdate() > 0;
     }
+
+    @Override
+    public ArrayList<Customer> searchCustomers(String searchText) throws SQLException, ClassNotFoundException {
+        String sql = "SELECT * FROM Customer WHERE name LIKE ? || address LIKE ?";
+        PreparedStatement statement = DBConnection.getInstance().getConnection().prepareStatement(sql);
+        statement.setString(1,searchText);
+        statement.setString(2,searchText);
+        ResultSet set = statement.executeQuery();
+        ArrayList<Customer> list = new ArrayList<>();
+        while (set.next()){
+            list.add(new Customer(set.getString(1),
+                    set.getString(2),
+                    set.getString(3),
+                    set.getDouble(4)));
+        }
+        return list;
+    }
 }

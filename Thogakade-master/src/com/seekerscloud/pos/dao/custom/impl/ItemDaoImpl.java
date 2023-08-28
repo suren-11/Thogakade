@@ -41,4 +41,20 @@ public class ItemDaoImpl implements ItemDao {
         statement.setString(4,i.getCode());
         return statement.executeUpdate() > 0;
     }
+
+    @Override
+    public ArrayList<Item> searchItems(String searchText) throws SQLException, ClassNotFoundException {
+        String sql = "SELECT * FROM Item WHERE description LIKE ?";
+        PreparedStatement statement = DBConnection.getInstance().getConnection().prepareStatement(sql);
+        statement.setString(1,searchText);
+        ResultSet set = statement.executeQuery();
+        ArrayList<Item> itemList = new ArrayList<>();
+        while (set.next()){
+            itemList.add(new Item(set.getString(1),
+                    set.getString(2),
+                    set.getDouble(3),
+                    set.getInt(4)));
+        }
+        return itemList;
+    }
 }
