@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Item {
+public class Item implements SuperEntity{
     private String code;
     private String description;
     private double unitPrice;

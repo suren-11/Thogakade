@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class Customer{
+public class Customer implements SuperEntity{
 
     private String id;
 
