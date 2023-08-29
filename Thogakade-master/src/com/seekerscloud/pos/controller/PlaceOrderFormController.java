@@ -1,9 +1,6 @@
 package com.seekerscloud.pos.controller;
 
 import com.seekerscloud.pos.db.DBConnection;
-import com.seekerscloud.pos.db.Database;
-import com.seekerscloud.pos.modal.Customer;
-import com.seekerscloud.pos.modal.Item;
 import com.seekerscloud.pos.modal.ItemDetails;
 import com.seekerscloud.pos.modal.Order;
 import com.seekerscloud.pos.view.tm.CartTm;
