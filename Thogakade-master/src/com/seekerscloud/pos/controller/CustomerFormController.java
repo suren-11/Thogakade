@@ -1,10 +1,14 @@
 package com.seekerscloud.pos.controller;
 
 import com.jfoenix.controls.JFXButton;
+import com.seekerscloud.pos.bo.BoFactory;
+import com.seekerscloud.pos.bo.BoTypes;
+import com.seekerscloud.pos.bo.custom.CustomerBo;
 import com.seekerscloud.pos.dao.DaoFactory;
 import com.seekerscloud.pos.dao.DaoTypes;
 import com.seekerscloud.pos.dao.custom.CustomerDao;
 import com.seekerscloud.pos.dao.custom.impl.CustomerDaoImpl;
+import com.seekerscloud.pos.dto.CustomerDto;
 import com.seekerscloud.pos.entity.Customer;
 import com.seekerscloud.pos.view.tm.CustomerTm;
 import javafx.collections.FXCollections;
@@ -36,7 +40,7 @@ public class CustomerFormController {
     public TableColumn colAddress;
     public TableColumn colSalary;
     public TableColumn colOption;
-    private CustomerDao customerDao = DaoFactory.getInstance().getDao(DaoTypes.CUSTOMER);
+    private CustomerBo customerBo = BoFactory.getInstance().getBo(BoTypes.CUSTOMER);
     private String searchText = "";
 
     public void initialize(){
@@ -76,9 +80,9 @@ public class CustomerFormController {
         try {
             ObservableList<CustomerTm> tmList = FXCollections.observableArrayList();
 
-            ArrayList<Customer> customerList = customerDao.searchCustomers(searchText);
+            ArrayList<CustomerDto> customerList = customerBo.searchCustomers(searchText);
 
-            for (Customer c : customerList){
+            for (CustomerDto c : customerList){
                     Button btn = new Button("Delete");
                     CustomerTm tm = new CustomerTm(
                             c.getId(),
@@ -92,7 +96,7 @@ public class CustomerFormController {
                         Optional<ButtonType> buttonType = alert.showAndWait();
                         if (buttonType.get()==ButtonType.YES){
                             try {
-                                if(customerDao.delete(tm.getId())){
+                                if(customerBo.deleteCustomer(tm.getId())){
                                     searchCustomers(searchText);
                                     new Alert(Alert.AlertType.INFORMATION,"Customer Deleted!").show();
                                 }else {
@@ -124,7 +128,7 @@ public class CustomerFormController {
 
         if(btnSaveCustomer.getText().equalsIgnoreCase("Save Customer")){
             try {
-               boolean isCustomerSaved = customerDao.save(new Customer(
+               boolean isCustomerSaved = customerBo.saveCustomer(new CustomerDto(
                         txtId.getText(),
                         txtName.getText(),
                         txtAddress.getText(),
@@ -142,7 +146,7 @@ public class CustomerFormController {
             }
         }else {
             try {
-                boolean isCustomerUpdated = customerDao.update(new Customer(
+                boolean isCustomerUpdated = customerBo.updateCustomer(new CustomerDto(
                         txtId.getText(),
                         txtName.getText(),
                         txtAddress.getText(),
