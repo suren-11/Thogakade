@@ -4,15 +4,20 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@Entity
+@Table(name = "customer")
 public class Customer implements SuperEntity{
-
+    @Id
+    @Column(name = "customer_id")
     private String id;
-
+    @Column(name = "name",
+            nullable = false)
     private String name;
-
+    @Column(name = "address",
+            nullable = false)
     private String address;
-
+    @Column(name = "salary",
+            nullable = false)
     private double salary;
 
     public Customer() {

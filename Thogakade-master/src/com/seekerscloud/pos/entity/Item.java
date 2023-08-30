@@ -3,11 +3,20 @@ package com.seekerscloud.pos.entity;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-
+@Entity
+@Table(name = "Item")
 public class Item implements SuperEntity{
+    @Id
+    @Column(name = "code")
     private String code;
+    @Column(name = "description",
+            nullable = false)
     private String description;
+    @Column(name = "unit_Price",
+            nullable = false)
     private double unitPrice;
+    @Column(name = "qty_On_Hand",
+            nullable = false)
     private int qtyOnHand;
 
     //------------------------
