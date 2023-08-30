@@ -7,7 +7,7 @@ import java.util.List;
 @Table(name = "Item")
 public class Item implements SuperEntity{
     @Id
-    @Column(name = "code")
+    @Column(name = "item_code")
     private String code;
     @Column(name = "description",
             nullable = false)
@@ -20,6 +20,10 @@ public class Item implements SuperEntity{
     private int qtyOnHand;
 
     //------------------------
+    @OneToMany(mappedBy = "item", cascade = {
+            CascadeType.ALL
+    })
+    private List<OrderDetails> details = new ArrayList<>();
 
     //------------------------
 
