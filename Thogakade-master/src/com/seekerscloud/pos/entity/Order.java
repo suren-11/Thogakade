@@ -9,6 +9,10 @@ public class Order {
     private String date;
     private double totalCost;
     //--------------------------
+    @ManyToOne
+    @JoinColumn(
+            name = "customer_id"
+    )
     private Customer customer;
 
     //---------------------------

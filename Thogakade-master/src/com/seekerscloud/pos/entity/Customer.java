@@ -20,6 +20,11 @@ public class Customer implements SuperEntity{
             nullable = false)
     private double salary;
 
+    //----------------------------
+    @OneToMany(mappedBy = "customer")
+    private List<Order> orders = new ArrayList<>();
+    //----------------------------
+
     public Customer() {
     }
 
@@ -28,6 +33,14 @@ public class Customer implements SuperEntity{
         this.name = name;
         this.address = address;
         this.salary = salary;
+    }
+
+    public List<Order> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(List<Order> orders) {
+        this.orders = orders;
     }
 
     public String getId() {
